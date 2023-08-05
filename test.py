@@ -40,10 +40,9 @@ def scanAndFlag():
     if found == False:
         print(message)
 
-# schedule.every(10).seconds.do(scanAndFlag)
+schedule.every(10).seconds.do(scanAndFlag)
 
-# while True:
-    # schedule.run_pending()
-# time.sleep(1)
-scanAndFlag()
+while True:
+    schedule.run_pending()
+    time.sleep(1)
 
