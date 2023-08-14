@@ -29,13 +29,13 @@ def scan_network(ip_range):
     return clients
 
 # if __name__ == "__main__":
-#     target_ip_range = "192.168.75.0/24"  # Change this to your network IP range
+#     target_ip_range = "192.168.77.0/24"  # Change this to your network IP range
 #     results = scan_network(target_ip_range)
 
 #     print("Available MAC and IP addresses:")
 #     print("--------------------------------")
 #     for result in results:
-#         print(f"HOSTNAME: {result['hostname']} \tIP: {result['ip']} \t MAC: {result['mac']}")
+#         print(f"HOSTNAME: {result['hostname']}\tIP: {result['ip']}\t MAC: {result['mac']}")
 
 
         

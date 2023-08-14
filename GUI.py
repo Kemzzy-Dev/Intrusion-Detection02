@@ -4,8 +4,10 @@ import qtvscodestyle as qtvsc
 import scan
 import DBhandler
 import subprocess
+import time
 
 process = None
+    
 class Ui(QtWidgets.QMainWindow):
     def __init__(self):
         super(Ui, self).__init__()
@@ -22,13 +24,43 @@ class Ui(QtWidgets.QMainWindow):
         self.scan.clicked.connect(self.scanPopulate)
         self.exit.clicked.connect(self.closeWindow)
         self.saveAndExit.clicked.connect(self.saveandexit)
+        self.actionApp.triggered.connect(self.about_window)
+        self.actionHow_to_use.triggered.connect(self.help_window)
 
 
         #functions
+    def scanPopulate(self):
+        network = self.network.text()
+        subnet = self.subnet.text()
+        target_ip_range = network + subnet
+
+        popup = QtWidgets.QDialog(self)
+        popup.setWindowTitle("Scanning")
+
+        label = QtWidgets.QLabel("Scanning....Please wait!!!!", popup)
+        label.move(20, 20)
+        
+        popup.show()
+
+        results = scan.scan_network(target_ip_range)
+        count = 0
+        self.detectedIP.clear()
+        for result in results:
+            self.detectedIP.addItem(f"{count}\t{result['hostname']}\t{result['ip']}\t{result['mac']}")
+            count+=1
+
+        popup.close()
+        
+
     def run_other_script(self):
         global process
+        network = self.network.text()
+        subnet = self.subnet.text()
+        target_ip_range = network + subnet
+
         # Start the other Python script as a subprocess
-        process = subprocess.run(['python3', 'test.py'], capture_output=True, text=True)
+        var1 = target_ip_range
+        process = subprocess.run(['python3', 'detect.py', var1], text=True)
 
     def terminate_other_script(self):
         global process
@@ -36,44 +68,75 @@ class Ui(QtWidgets.QMainWindow):
             # Terminate the subprocess if it's still running
             process.terminate()
 
-    def scanPopulate(self):
-        network = self.network.text()
-        subnet = self.subnet.text()
-        target_ip_range = network + subnet
+    def about_window(self):
+        msg = QtWidgets.QMessageBox(self)
+        msg.setWindowTitle('About')
+        msg.setIcon(QtWidgets.QMessageBox.Information)
+        msg.setText("""The idea behind this application is to find out all the devices connected to your network/IOT devices and alert you of the untrusted ones.
+        It takes a few seconds to run, it runs every 5 minutes to check for intruders. This script will scan the network of your choice and will alert you of any devices not present in the whitelist. 
+        
+        The whitelist is a list of MAC address that YOU trust. The first time you run the application, the whitelist will be empty, it's up to up to add your trusted devices to the whitelist.
+                        
+                For information on how to use check the help menu.
+                        """)
+        x = msg.exec_()
 
-        results = scan.scan_network(target_ip_range)
+    def help_window(self):
+        msg = QtWidgets.QMessageBox(self)
+        msg.setIcon(QtWidgets.QMessageBox.Information)
+        msg.setWindowTitle('Help!')
+        msg.setText("""                                     How to use!!!
 
-        count = 0
-        self.detectedIP.clear()
-        for result in results:
-            self.detectedIP.addItem(f"{count}\t{result['hostname']}\t{result['ip']}\t{result['mac']}")
-            count+=1
+    1. Check for your network IP and copy the first 3 set of numbers and attach ".0" at the end e.g "192.168.22.0" or "192.163.222.0" 
+    
+    2. Paste the copied IP address in the network address section
+    
+    3. The default netmask is "/24". If your network netmask is different don't forget to modify this or leave as default 
+    
+    4. Click on the scan button and wait for the application to scan your network for the list of devices connected to your network.
+    
+    5. A list of IP addresses and the corresponding MAC address will be displayed in the detected IP section 
+    
+    6. Click on the IP you want to add to the whitelist and click on allow device
+    
+    7. After selecting all, click on save and the application will save the selected IP to the allowed IP list
+    
+    8. Click on exit to start the script in the background.
+
+            
+                        """)
+        x = msg.exec_()
             
     def closeWindow(self):
         self.close()
+        self.run_other_script()
     
     def saveandexit(self):
         self.saveIP()
         self.close()
+        self.run_other_script()
 
     def allowip(self):
         clicked = self.detectedIP.currentRow()
         item = self.detectedIP.takeItem(clicked).text()
         splitItem = item.split("\t")
 
-        for i in range(self.allowedIP.count()):
-            if splitItem[3] != self.allowedIP.item(i).text().split(" ")[4]:
-                self.allowedIP.addItem(f"{self.count}  {splitItem[2]}  {splitItem[3]}")
-                self.count += 1
-            else:
-                print('Already present')
+        if (self.allowedIP.count() > 0):
+            for i in range(self.allowedIP.count()):
+                if splitItem[3] != self.allowedIP.item(i).text().split(" ")[4]:
+                    self.allowedIP.addItem(f"{self.count}  {splitItem[2]}  {splitItem[3]}")
+                    self.count += 1
+                else:
+                    pass
+        else:
+            self.allowedIP.addItem(f"{self.count}  {splitItem[2]}  {splitItem[3]}")
+            self.count += 1
         
         
 
     #this function compares mac address instead of IP addresses
     def saveIP(self):
         items = []
-        flaggedItems = []
         DBhandler.createTable()
 
         for i in range(self.allowedIP.count()):
@@ -84,11 +147,6 @@ class Ui(QtWidgets.QMainWindow):
         dataList =[]
         for data in dataset:
             dataList.append(data[2])
-
-        flaggeddataset = DBhandler.getFlaggedAddress()
-        flaggeddataList =[]
-        for data in flaggeddataset:
-            flaggeddataList.append(data[2])
         
         #get the items from the availble ip list items
         for item in items:
@@ -96,11 +154,15 @@ class Ui(QtWidgets.QMainWindow):
             splitData = data.split(" ")
             
             #checking if the data about to be saved is already present
-            if splitData[4] not in dataList and splitData[4] not in flaggeddataList:
+            if splitData[4] not in dataList:
                 DBhandler.saveAddress(splitData[2], splitData[4])#this is where the ipaddress and mac are located
-
-        # self.run_other_script()
-        # self.close()
+        
+        # display a saved window
+        msg = QtWidgets.QMessageBox()
+        msg.setIcon(QtWidgets.QMessageBox.Information)
+        msg.setWindowTitle('Save!')
+        msg.setText("   Saved!!!    ")
+        msg.exec_()
 
     def dbPopulate(self):
         try:

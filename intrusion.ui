@@ -71,16 +71,6 @@ color: rgb(0, 0, 0);
      <string>Subnet mask:</string>
     </property>
    </widget>
-   <widget class="QLineEdit" name="host">
-    <property name="geometry">
-     <rect>
-      <x>90</x>
-      <y>80</y>
-      <width>181</width>
-      <height>27</height>
-     </rect>
-    </property>
-   </widget>
    <widget class="QListWidget" name="allowedIP">
     <property name="geometry">
      <rect>
@@ -95,27 +85,6 @@ color: rgb(0, 0, 0);
 color: rgb(0, 0, 0);</string>
     </property>
    </widget>
-   <widget class="QLabel" name="label_10">
-    <property name="geometry">
-     <rect>
-      <x>290</x>
-      <y>80</y>
-      <width>51</width>
-      <height>19</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <family>Quicksand Medium</family>
-      <pointsize>12</pointsize>
-      <weight>75</weight>
-      <bold>true</bold>
-     </font>
-    </property>
-    <property name="text">
-     <string>Port:</string>
-    </property>
-   </widget>
    <widget class="QLineEdit" name="network">
     <property name="geometry">
      <rect>
@@ -126,7 +95,7 @@ color: rgb(0, 0, 0);</string>
      </rect>
     </property>
     <property name="text">
-     <string>192.168.75.0</string>
+     <string>192.168.248.0</string>
     </property>
    </widget>
    <widget class="QPushButton" name="allowIP">
@@ -150,7 +119,7 @@ border-radius: 7px;</string>
    <widget class="QPushButton" name="scan">
     <property name="geometry">
      <rect>
-      <x>490</x>
+      <x>390</x>
       <y>80</y>
       <width>121</width>
       <height>31</height>
@@ -384,19 +353,6 @@ background-color: rgb(46, 194, 126);</string>
      <string>Network address: </string>
     </property>
    </widget>
-   <widget class="QLineEdit" name="port">
-    <property name="geometry">
-     <rect>
-      <x>350</x>
-      <y>80</y>
-      <width>81</width>
-      <height>31</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>5555</string>
-    </property>
-   </widget>
    <widget class="QPushButton" name="save">
     <property name="geometry">
      <rect>
@@ -502,27 +458,6 @@ background-color: rgb(224, 212, 212)</string>
      <bool>true</bool>
     </property>
    </widget>
-   <widget class="QLabel" name="label_9">
-    <property name="geometry">
-     <rect>
-      <x>40</x>
-      <y>80</y>
-      <width>41</width>
-      <height>19</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <family>Quicksand Medium</family>
-      <pointsize>12</pointsize>
-      <weight>75</weight>
-      <bold>true</bold>
-     </font>
-    </property>
-    <property name="text">
-     <string>Host:</string>
-    </property>
-   </widget>
    <widget class="QLabel" name="label_7">
     <property name="geometry">
      <rect>
@@ -624,8 +559,32 @@ color: rgb(0, 0, 0);
      <height>24</height>
     </rect>
    </property>
+   <widget class="QMenu" name="menuAbout">
+    <property name="title">
+     <string>About</string>
+    </property>
+    <addaction name="actionApp"/>
+   </widget>
+   <widget class="QMenu" name="menuHelp">
+    <property name="title">
+     <string>Help</string>
+    </property>
+    <addaction name="actionHow_to_use"/>
+   </widget>
+   <addaction name="menuAbout"/>
+   <addaction name="menuHelp"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
+  <action name="actionApp">
+   <property name="text">
+    <string>App</string>
+   </property>
+  </action>
+  <action name="actionHow_to_use">
+   <property name="text">
+    <string>How to use</string>
+   </property>
+  </action>
  </widget>
  <resources/>
  <connections/>
