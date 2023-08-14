@@ -77,7 +77,7 @@ class Ui(QtWidgets.QMainWindow):
         
         The whitelist is a list of MAC address that YOU trust. The first time you run the application, the whitelist will be empty, it's up to up to add your trusted devices to the whitelist.
                         
-                For information on how to use check the help menu.
+        For information on how to use check the help menu.
                         """)
         x = msg.exec_()
 
@@ -118,18 +118,25 @@ class Ui(QtWidgets.QMainWindow):
 
     def allowip(self):
         clicked = self.detectedIP.currentRow()
-        item = self.detectedIP.takeItem(clicked).text()
+        item = self.detectedIP.item(clicked).text()
         splitItem = item.split("\t")
 
         if (self.allowedIP.count() > 0):
             for i in range(self.allowedIP.count()):
-                if splitItem[3] != self.allowedIP.item(i).text().split(" ")[4]:
-                    self.allowedIP.addItem(f"{self.count}  {splitItem[2]}  {splitItem[3]}")
+                if splitItem[3] != self.allowedIP.item(i).text().split(" ")[11]:
+                    print(self.allowedIP.item(i).text().split(" "))
+
+                    self.allowedIP.addItem(f"   {self.count}    {splitItem[2]}    {splitItem[3]}")
                     self.count += 1
                 else:
-                    pass
+                    msg = QtWidgets.QMessageBox(self)
+                    msg.setIcon(QtWidgets.QMessageBox.Warning)
+                    msg.setWindowTitle('Error')
+                    msg.setText("DEVICE ALREADY PRESENT")
+                    msg.exec_()
+
         else:
-            self.allowedIP.addItem(f"{self.count}  {splitItem[2]}  {splitItem[3]}")
+            self.allowedIP.addItem(f"   {self.count}    {splitItem[2]}    {splitItem[3]}")
             self.count += 1
         
         
@@ -154,11 +161,11 @@ class Ui(QtWidgets.QMainWindow):
             splitData = data.split(" ")
             
             #checking if the data about to be saved is already present
-            if splitData[4] not in dataList:
-                DBhandler.saveAddress(splitData[2], splitData[4])#this is where the ipaddress and mac are located
+            if splitData[11] not in dataList:
+                DBhandler.saveAddress(splitData[7], splitData[11])#this is where the ipaddress and mac are located
         
         # display a saved window
-        msg = QtWidgets.QMessageBox()
+        msg = QtWidgets.QMessageBox(self)
         msg.setIcon(QtWidgets.QMessageBox.Information)
         msg.setWindowTitle('Save!')
         msg.setText("   Saved!!!    ")
@@ -169,7 +176,7 @@ class Ui(QtWidgets.QMainWindow):
             self.count = 0
             datas = DBhandler.getAddress()
             for data in datas:
-                self.allowedIP.addItem(f"{self.count}  {data[1]}  {data[2]}")
+                self.allowedIP.addItem(f"   {self.count}    {data[1]}    {data[2]}")
                 self.count+=1
                 
         except(Exception):
@@ -178,9 +185,10 @@ class Ui(QtWidgets.QMainWindow):
     def flaggedPopulate(self):
         try:
             datas = DBhandler.getFlaggedAddress()
+            count = 0
             for data in datas:
-                self.flaggedIP.addItem(f"  {data[1]}  {data[2]}")
-                
+                self.flaggedIP.addItem(f"   {count}    {data[1]}    {data[2]}")
+                count +=1 
         except(Exception):
             pass
 
