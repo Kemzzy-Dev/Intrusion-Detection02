@@ -5,6 +5,7 @@ import scan
 import DBhandler
 import subprocess
 import time
+import socket
 
 process = None
     
@@ -18,9 +19,9 @@ class Ui(QtWidgets.QMainWindow):
         self.flaggedPopulate()
         self.terminate_other_script()
 
-        # #callbacks
+        # callbacks
         self.allowIP.clicked.connect(self.allowip)
-        self.save.clicked.connect(self.saveIP)
+        self.save.clicked.connect(self.saveMac)
         self.scan.clicked.connect(self.scanPopulate)
         self.exit.clicked.connect(self.closeWindow)
         self.saveAndExit.clicked.connect(self.saveandexit)
@@ -34,24 +35,41 @@ class Ui(QtWidgets.QMainWindow):
         subnet = self.subnet.text()
         target_ip_range = network + subnet
 
-        popup = QtWidgets.QDialog(self)
-        popup.setWindowTitle("Scanning")
+        # check if wifi is available
+        try:
+            # Attempt to create a socket and connect to Google's DNS server
+            socket.create_connection(("8.8.8.8", 53))
+            connected = True
+        except OSError:
+            connected = False
 
-        label = QtWidgets.QLabel("Scanning....Please wait!!!!", popup)
-        label.move(20, 20)
+        if connected:
+            popup = QtWidgets.QDialog(self)
+            popup.setWindowTitle("Scanning")
+
+            label = QtWidgets.QLabel("Scanning....Please wait!!!!", popup)
+            label.move(20, 20)
+            
+            popup.show()
+
+            results = scan.scan_network(target_ip_range)
+            count = 0
+            self.detectedIP.clear()
+            for result in results:
+                self.detectedIP.addItem(f"{count}\t{result['hostname']}\t{result['ip']}\t{result['mac']}")
+                count+=1
+
+            popup.close()
+        else:
+            msg = QtWidgets.QMessageBox(self)
+            msg.setIcon(QtWidgets.QMessageBox.Warning)
+            msg.setWindowTitle('Help!')
+            msg.setText("No wifi detected!!!")
+            msg.exec_()
         
-        popup.show()
-
-        results = scan.scan_network(target_ip_range)
-        count = 0
-        self.detectedIP.clear()
-        for result in results:
-            self.detectedIP.addItem(f"{count}\t{result['hostname']}\t{result['ip']}\t{result['mac']}")
-            count+=1
-
-        popup.close()
         
-
+        
+    # run the other script to detect malicious mac addresses
     def run_other_script(self):
         global process
         network = self.network.text()
@@ -59,15 +77,19 @@ class Ui(QtWidgets.QMainWindow):
         target_ip_range = network + subnet
 
         # Start the other Python script as a subprocess
-        var1 = target_ip_range
-        process = subprocess.run(['python3', 'detect.py', var1], text=True)
+        # var1 = target_ip_range
+        var1 = self.iotIP.text()
+        var2 = self.iotPort.text()
+        process = subprocess.run(['python3', 'detect.py', var1, var2], text=True)
 
+    # terminate the above script when application starts
     def terminate_other_script(self):
         global process
         if process and process.poll() is None:
             # Terminate the subprocess if it's still running
             process.terminate()
 
+    # about the application
     def about_window(self):
         msg = QtWidgets.QMessageBox(self)
         msg.setWindowTitle('About')
@@ -81,6 +103,7 @@ class Ui(QtWidgets.QMainWindow):
                         """)
         x = msg.exec_()
 
+    # help center
     def help_window(self):
         msg = QtWidgets.QMessageBox(self)
         msg.setIcon(QtWidgets.QMessageBox.Information)
@@ -92,30 +115,35 @@ class Ui(QtWidgets.QMainWindow):
     2. Paste the copied IP address in the network address section
     
     3. The default netmask is "/24". If your network netmask is different don't forget to modify this or leave as default 
+
+    4. Enter the IP address and port of connection to the IOT device.
     
-    4. Click on the scan button and wait for the application to scan your network for the list of devices connected to your network.
+    5. Click on the scan button and wait for the application to scan your network for the list of devices connected to your network.
     
-    5. A list of IP addresses and the corresponding MAC address will be displayed in the detected IP section 
+    6. A list of IP addresses and the corresponding MAC address will be displayed in the detected IP section 
     
-    6. Click on the IP you want to add to the whitelist and click on allow device
+    7. Click on the IP you want to add to the whitelist and click on allow device
     
-    7. After selecting all, click on save and the application will save the selected IP to the allowed IP list
+    8. After selecting all, click on save and the application will save the selected IP to the allowed IP list
     
-    8. Click on exit to start the script in the background.
+    9. Click on exit to start the script in the background.
 
             
                         """)
         x = msg.exec_()
             
+    # exit the program 
     def closeWindow(self):
         self.close()
         self.run_other_script()
     
+    # save the program and exit
     def saveandexit(self):
-        self.saveIP()
+        self.saveMac()
         self.close()
         self.run_other_script()
 
+    # function to add an ip to the whitelist
     def allowip(self):
         clicked = self.detectedIP.currentRow()
         item = self.detectedIP.item(clicked).text()
@@ -139,10 +167,8 @@ class Ui(QtWidgets.QMainWindow):
             self.allowedIP.addItem(f"   {self.count}    {splitItem[2]}    {splitItem[3]}")
             self.count += 1
         
-        
-
-    #this function compares mac address instead of IP addresses
-    def saveIP(self):
+    # saves the mac address
+    def saveMac(self):
         items = []
         DBhandler.createTable()
 
@@ -171,6 +197,7 @@ class Ui(QtWidgets.QMainWindow):
         msg.setText("   Saved!!!    ")
         msg.exec_()
 
+    # poppulate the interface with a list of whitelisted mac addresses
     def dbPopulate(self):
         try:
             self.count = 0
@@ -182,6 +209,7 @@ class Ui(QtWidgets.QMainWindow):
         except(Exception):
             pass
     
+    # poppulate the interface with a list of flagged mac addresses
     def flaggedPopulate(self):
         try:
             datas = DBhandler.getFlaggedAddress()
@@ -191,7 +219,6 @@ class Ui(QtWidgets.QMainWindow):
                 count +=1 
         except(Exception):
             pass
-
 
 
 
