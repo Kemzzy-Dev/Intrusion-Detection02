@@ -19,7 +19,7 @@ Software Requirements: python3
 
 1. Clone the application to your local environment and set up a virtual environment.
 2. CD into the application and run `pip install -r requirements.txt`. This will install all the modules needed to run the application.
-3. Run the `GUI.py` file and proceed to use the application.
+3. Run the `GUI.py` file and proceed to use the application. This will automatically create a database.db file where allowed IP and flaggedIP will be saved.
 4. More about using the GUI can be located in the about section in the GUI application.
 
 The database filename is `database.db`, it is an sqlite3 database. It will be created if absent. The network must be specified in the network/mask notation.
