@@ -24,11 +24,13 @@ Software Requirements: python3
 
 The database filename is `database.db`, it is an sqlite3 database. It will be created if absent. The network must be specified in the network/mask notation.
 
-Example of valid networks:
+You can check your network by running `ifconfig` on unix and `ipconfig` on windows
+The network mask is already present by default
 
-- 192.168.0.0/24
-- 192.168.1.0/24
-- 192.168.2.0/24
+Example of valid networks:
+- 192.168.0.0
+- 192.168.1.0
+- 192.168.2.0
 
 You should launch all programs with `sudo`:
 
