@@ -1,7 +1,7 @@
 from scapy.all import ARP, Ether, srp
 import socket
-from DBhandler import getAddress, saveAddress, createTable
 
+#getting the hostname of the device
 def get_hostname(ip_address):
     try:
         return socket.gethostbyaddr(ip_address)[0]

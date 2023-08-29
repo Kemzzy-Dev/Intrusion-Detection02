@@ -4,11 +4,12 @@ import qtvscodestyle as qtvsc
 import scan
 import DBhandler
 import subprocess
-import time
+import psutil
 import socket
 
-process = None
-    
+run = True
+
+
 class Ui(QtWidgets.QMainWindow):
     def __init__(self):
         super(Ui, self).__init__()
@@ -17,7 +18,8 @@ class Ui(QtWidgets.QMainWindow):
         self.dir = ''
         self.dbPopulate()
         self.flaggedPopulate()
-        self.terminate_other_script()
+
+        # self.terminate_other_script()
 
         # callbacks
         self.allowIP.clicked.connect(self.allowip)
@@ -27,6 +29,7 @@ class Ui(QtWidgets.QMainWindow):
         self.saveAndExit.clicked.connect(self.saveandexit)
         self.actionApp.triggered.connect(self.about_window)
         self.actionHow_to_use.triggered.connect(self.help_window)
+        # self.stopProgram.toggled.connect(self.terminate_other_script)
 
 
         #functions
@@ -67,27 +70,29 @@ class Ui(QtWidgets.QMainWindow):
             msg.setText("No wifi detected!!!")
             msg.exec_()
         
-        
-        
+    def terminate_python_script(self, script_name):
+        # Iterate through all running processes
+        for proc in psutil.process_iter(['pid', 'name', 'cmdline']):
+            try:
+                if 'python' in proc.info['name'].lower() and script_name in ' '.join(proc.info['cmdline']):
+                    psutil.Process(proc.info['pid']).terminate()
+            except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+                pass
+
+
     # run the other script to detect malicious mac addresses
     def run_other_script(self):
-        global process
-        network = self.network.text()
-        subnet = self.subnet.text()
-        target_ip_range = network + subnet
+        if self.stopProgram.isChecked():
+            self.terminate_python_script('detect.py')
+        else:
+            network = self.network.text()
+            subnet = self.subnet.text()
+            target_ip_range = network + subnet
 
-        # Start the other Python script as a subprocess
-        # var1 = target_ip_range
-        var1 = self.iotIP.text()
-        var2 = self.iotPort.text()
-        process = subprocess.run(['python3', 'detect.py', var1, var2], text=True)
+            # Start the other Python script (detect.py) as a subprocess
+            var1 = target_ip_range
 
-    # terminate the above script when application starts
-    def terminate_other_script(self):
-        global process
-        if process and process.poll() is None:
-            # Terminate the subprocess if it's still running
-            process.terminate()
+            subprocess.run(['python3', 'detect.py', var1], text=True)
 
     # about the application
     def about_window(self):
@@ -127,6 +132,8 @@ class Ui(QtWidgets.QMainWindow):
     8. After selecting all, click on save and the application will save the selected IP to the allowed IP list
     
     9. Click on exit to start the script in the background.
+
+    10. Click on the end program checkbox to stop the app from running in the background.
 
             
                         """)
