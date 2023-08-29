@@ -38,4 +38,3 @@ You should launch all programs with `sudo`:
 - `GUI.py`: This is the python file that connects with the UI and gives a graphical interface of the application.
 - `intrusion.ui`: An XML file that contains the blueprint for the GUI.
 ```
-Just save this content in a `.md` file, and it will be correctly formatted as Markdown text.
