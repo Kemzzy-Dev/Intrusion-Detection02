@@ -82,17 +82,22 @@ class Ui(QtWidgets.QMainWindow):
 
     # run the other script to detect malicious mac addresses
     def run_other_script(self):
-        if self.stopProgram.isChecked():
-            self.terminate_python_script('detect.py')
-        else:
-            network = self.network.text()
-            subnet = self.subnet.text()
-            target_ip_range = network + subnet
+        try:
+            if self.stopProgram.isChecked():
+                self.terminate_python_script('detect.py')
+            else:
+                network = self.network.text()
+                subnet = self.subnet.text()
+                target_ip_range = network + subnet
 
-            # Start the other Python script (detect.py) as a subprocess
-            var1 = target_ip_range
+                # Start the other Python script (detect.py) as a subprocess
+                var1 = target_ip_range
 
-            subprocess.run(['python3', 'detect.py', var1], text=True)
+                subprocess.run(['python3', 'detect.py', var1], text=True)
+
+        except KeyboardInterrupt:
+            print("Program Ended.....")
+
 
     # about the application
     def about_window(self):
@@ -236,3 +241,4 @@ if __name__ == "__main__":
     app.setStyleSheet(stylesheet)
     window = Ui()
     app.exec_()
+    
